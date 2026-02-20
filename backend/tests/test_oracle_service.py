@@ -1,0 +1,45 @@
+import pytest
+
+from app.services.oracle import reset_password
+
+
+class TestResetPasswordSuccess:
+    def test_returns_success_message(self, mock_oracle_success):
+        result = reset_password("scott", "tiger", "newpass123")
+        assert result == "Password changed successfully."
+
+    def test_calls_connect_with_correct_args(self, mock_oracle_success):
+        reset_password("scott", "tiger", "newpass123")
+        mock_oracle_success.assert_called_once_with(
+            user="scott",
+            password="tiger",
+            dsn="localhost:1521/testdb",
+            newpassword="newpass123",
+        )
+
+    def test_closes_connection(self, mock_oracle_success):
+        reset_password("scott", "tiger", "newpass123")
+        conn = mock_oracle_success.return_value
+        conn.close.assert_called_once()
+
+
+class TestResetPasswordOraErrors:
+    def test_invalid_credentials(self, mock_oracle_error):
+        with mock_oracle_error(1017):
+            with pytest.raises(ValueError, match="Invalid username or current password"):
+                reset_password("scott", "wrongpw", "newpass123")
+
+    def test_complexity_not_met(self, mock_oracle_error):
+        with mock_oracle_error(28003):
+            with pytest.raises(ValueError, match="complexity requirements"):
+                reset_password("scott", "tiger", "weak")
+
+    def test_password_reuse(self, mock_oracle_error):
+        with mock_oracle_error(28007):
+            with pytest.raises(ValueError, match="cannot be reused"):
+                reset_password("scott", "tiger", "oldpass123")
+
+    def test_unknown_error_code(self, mock_oracle_error):
+        with mock_oracle_error(99999):
+            with pytest.raises(ValueError, match="unexpected database error"):
+                reset_password("scott", "tiger", "newpass123")

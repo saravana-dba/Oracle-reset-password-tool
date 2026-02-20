@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Oracle Password Reset</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    .toast-enter  { animation: slideDown 0.3s ease-out; }
+    .toast-exit   { animation: slideUp 0.25s ease-in forwards; }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes slideUp   { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-8px); } }
+
+    input:focus { box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+
+    .password-toggle { cursor: pointer; transition: color 0.15s; }
+    .password-toggle:hover { color: #2563eb; }
+  </style>
+</head>
+<body class="min-h-screen bg-gray-50 flex items-center justify-center px-4 font-sans">
+
+  <div class="w-full max-w-md">
+
+    <!-- Logo -->
+    <div class="flex justify-center mb-6">
+      <div class="h-12 w-12 rounded-xl bg-blue-600 flex items-center justify-center">
+        <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+        </svg>
+      </div>
+    </div>
+
+    <!-- Card -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+      <h1 class="text-xl font-semibold text-gray-900 text-center">Reset Password</h1>
+      <p class="text-sm text-gray-500 text-center mt-1 mb-7">Enter your credentials to update your database password</p>
+
+      <!-- Status Message -->
+      <div id="statusMsg" class="hidden mb-5 px-4 py-3.5 rounded-lg text-sm font-medium flex items-start gap-3">
+        <svg id="statusIcon" class="h-5 w-5 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"></svg>
+        <div>
+          <p id="statusTitle" class="font-semibold"></p>
+          <p id="statusDetail" class="mt-0.5"></p>
+        </div>
+        <button type="button" id="statusClose" class="ml-auto shrink-0 opacity-50 hover:opacity-100 transition-opacity">
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+      </div>
+
+      <form id="resetForm" class="space-y-4">
+        <!-- Username -->
+        <div>
+          <label for="username" class="block text-sm font-medium text-gray-700 mb-1.5">Username</label>
+          <input
+            type="text" id="username" name="username" required autocomplete="username"
+            placeholder="Database username"
+            class="w-full px-3.5 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-colors"
+          />
+        </div>
+
+        <!-- Current Password -->
+        <div>
+          <label for="currentPassword" class="block text-sm font-medium text-gray-700 mb-1.5">Current Password</label>
+          <div class="relative">
+            <input
+              type="password" id="currentPassword" name="currentPassword" required autocomplete="current-password"
+              placeholder="Enter current password"
+              class="w-full px-3.5 py-2.5 pr-11 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-colors"
+            />
+            <button type="button" class="password-toggle absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" data-target="currentPassword">
+              <svg class="eye-open h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+              <svg class="eye-closed h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12c1.292 4.338 5.31 7.5 10.066 7.5.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="border-t border-gray-100 my-1"></div>
+
+        <!-- New Password -->
+        <div>
+          <label for="newPassword" class="block text-sm font-medium text-gray-700 mb-1.5">New Password</label>
+          <div class="relative">
+            <input
+              type="password" id="newPassword" name="newPassword" required minlength="8" autocomplete="new-password"
+              placeholder="Minimum 8 characters"
+              class="w-full px-3.5 py-2.5 pr-11 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-colors"
+            />
+            <button type="button" class="password-toggle absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" data-target="newPassword">
+              <svg class="eye-open h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+              <svg class="eye-closed h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12c1.292 4.338 5.31 7.5 10.066 7.5.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Confirm Password -->
+        <div>
+          <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-1.5">Confirm New Password</label>
+          <div class="relative">
+            <input
+              type="password" id="confirmPassword" name="confirmPassword" required minlength="8" autocomplete="new-password"
+              placeholder="Re-enter new password"
+              class="w-full px-3.5 py-2.5 pr-11 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-colors"
+            />
+            <button type="button" class="password-toggle absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" data-target="confirmPassword">
+              <svg class="eye-open h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+              <svg class="eye-closed h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12c1.292 4.338 5.31 7.5 10.066 7.5.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Submit -->
+        <button
+          type="submit" id="submitBtn"
+          class="w-full bg-blue-600 text-white py-2.5 rounded-lg font-medium hover:bg-blue-700 active:bg-blue-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2"
+        >
+          <svg id="spinner" class="hidden animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+          </svg>
+          <span id="btnText">Reset Password</span>
+        </button>
+      </form>
+    </div>
+
+    <p class="text-center text-xs text-gray-400 mt-5">Contact your DBA if you need further assistance.</p>
+  </div>
+
+<script>
+  const API_URL = "http://localhost:8080/reset-password";
+
+  const form        = document.getElementById("resetForm");
+  const submitBtn   = document.getElementById("submitBtn");
+  const spinner     = document.getElementById("spinner");
+  const btnText     = document.getElementById("btnText");
+  const statusMsg   = document.getElementById("statusMsg");
+  const statusIcon  = document.getElementById("statusIcon");
+  const statusTitle = document.getElementById("statusTitle");
+  const statusDetail = document.getElementById("statusDetail");
+  const statusClose = document.getElementById("statusClose");
+
+  const CHECK_PATH = "M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z";
+  const ERROR_PATH = "M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z";
+
+  // ---- Status Message ----
+  function showStatus(message, success) {
+    statusIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="${success ? CHECK_PATH : ERROR_PATH}" />`;
+    statusTitle.textContent = success ? "Success" : "Error";
+    statusDetail.textContent = message;
+
+    statusMsg.className = `mb-5 px-4 py-3.5 rounded-lg text-sm flex items-start gap-3 toast-enter ${
+      success
+        ? "bg-green-50 text-green-800 border border-green-200"
+        : "bg-red-50 text-red-800 border border-red-200"
+    }`;
+  }
+
+  statusClose.addEventListener("click", () => {
+    statusMsg.classList.add("toast-exit");
+    statusMsg.addEventListener("animationend", () => {
+      statusMsg.classList.add("hidden");
+      statusMsg.classList.remove("toast-exit");
+    }, { once: true });
+  });
+
+  // ---- Loading State ----
+  function setLoading(loading) {
+    submitBtn.disabled = loading;
+    spinner.classList.toggle("hidden", !loading);
+    btnText.textContent = loading ? "Resetting..." : "Reset Password";
+  }
+
+  // ---- Password Visibility Toggles ----
+  document.querySelectorAll(".password-toggle").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const input = document.getElementById(btn.dataset.target);
+      const isHidden = input.type === "password";
+      input.type = isHidden ? "text" : "password";
+      btn.querySelector(".eye-open").classList.toggle("hidden", isHidden);
+      btn.querySelector(".eye-closed").classList.toggle("hidden", !isHidden);
+    });
+  });
+
+  // ---- Form Submit ----
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const username        = document.getElementById("username").value.trim();
+    const currentPassword = document.getElementById("currentPassword").value;
+    const newPassword     = document.getElementById("newPassword").value;
+    const confirmPassword = document.getElementById("confirmPassword").value;
+
+    if (newPassword !== confirmPassword) {
+      showStatus("New passwords do not match.", false);
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username,
+          current_password: currentPassword,
+          new_password: newPassword,
+        }),
+      });
+
+      if (res.status === 429) {
+        showStatus("Too many requests. Please try again later.", false);
+        return;
+      }
+
+      const data = await res.json();
+      showStatus(data.message, data.success);
+
+      if (data.success) form.reset();
+    } catch {
+      showStatus("Unable to reach the server. Please try again.", false);
+    } finally {
+      setLoading(false);
+    }
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,20 @@
+[project]
+name = "oracle-resetpass"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.129.0",
+    "oracledb>=3.4.2",
+    "pydantic-settings>=2.13.1",
+    "python-dotenv>=1.2.1",
+    "slowapi>=0.1.9",
+    "uvicorn>=0.41.0",
+]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "pytest>=9.0.2",
+]
