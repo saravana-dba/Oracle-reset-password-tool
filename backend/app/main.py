@@ -11,9 +11,7 @@ from app.config import settings
 from app.models import PasswordResetRequest, PasswordResetResponse
 from app.services.oracle import reset_password
 
-# ---------------------------------------------------------------------------
-# Logging — writes to reset_audit.log. Never logs passwords.
-# ---------------------------------------------------------------------------
+
 logging.basicConfig(
     filename="reset_audit.log",
     format="%(asctime)s | %(levelname)s | %(message)s",
@@ -21,9 +19,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger("audit")
 
-# ---------------------------------------------------------------------------
-# App & middleware
-# ---------------------------------------------------------------------------
+
 limiter = Limiter(key_func=get_remote_address)
 
 app = FastAPI(title="Oracle Password Reset", version="1.0.0")
@@ -45,9 +41,7 @@ async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
     )
 
 
-# ---------------------------------------------------------------------------
-# Routes
-# ---------------------------------------------------------------------------
+
 @app.post("/reset-password", response_model=PasswordResetResponse)
 @limiter.limit("5/minute")
 def handle_reset_password(request: Request, body: PasswordResetRequest):
