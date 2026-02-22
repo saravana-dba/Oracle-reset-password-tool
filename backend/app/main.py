@@ -50,8 +50,8 @@ def handle_reset_password(request: Request, body: PasswordResetRequest):
     ip = request.client.host
 
     try:
-        current_password = verification_store.consume_token(body.verification_token, body.username)
-        message = reset_password(body.username, current_password, body.new_password)
+        verification_store.consume_token(body.verification_token, body.username)
+        message = reset_password(body.username, body.current_password, body.new_password)
         logger.info("user=%s ip=%s status=SUCCESS", body.username, ip)
         return PasswordResetResponse(success=True, message=message)
 
@@ -67,7 +67,7 @@ def handle_verify_credentials(request: Request, body: CredentialCheckRequest):
 
     try:
         message = verify_credentials(body.username, body.current_password)
-        verification_token = verification_store.create_token(body.username, body.current_password)
+        verification_token = verification_store.create_token(body.username)
         logger.info("user=%s ip=%s status=VERIFY_SUCCESS", body.username, ip)
         return PasswordResetResponse(
             success=True,

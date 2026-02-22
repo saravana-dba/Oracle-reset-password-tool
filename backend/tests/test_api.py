@@ -6,6 +6,7 @@ VERIFY_ENDPOINT = "/verify-credentials"
 
 VALID_RESET_BODY = {
     "username": "scott",
+    "current_password": "tiger",
     "new_password": "newpass123",
     "verification_token": "token-123",
 }
@@ -86,7 +87,7 @@ class TestVerifyCredentialsEndpoint:
         assert data["success"] is True
         assert data["message"] == "Credentials verified."
         assert data["verification_token"] == "token-123"
-        mock_create_verification_token.assert_called_once_with("scott", "tiger")
+        mock_create_verification_token.assert_called_once_with("scott")
 
     def test_oracle_error_returns_200_with_failure(self, client, mock_oracle_error):
         with mock_oracle_error(1017):

@@ -61,5 +61,5 @@ def mock_create_verification_token():
 @pytest.fixture()
 def mock_consume_verification_token():
     """Mock verification token consumption to avoid state coupling in API tests."""
-    with patch("app.main.verification_store.consume_token", return_value="tiger") as mock_consume:
+    with patch("app.main.verification_store.consume_token", return_value=None) as mock_consume:
         yield mock_consume

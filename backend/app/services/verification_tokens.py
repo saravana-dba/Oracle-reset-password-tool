@@ -10,10 +10,9 @@ class VerificationTokenError(ValueError):
 
 @dataclass(slots=True)
 class VerifiedCredential:
-    """Credential payload stored against a short-lived verification token."""
+    """Identity record stored against a short-lived verification token."""
 
     username: str
-    current_password: str
     expires_at: datetime
 
 
@@ -26,12 +25,11 @@ class VerificationTokenStore:
         self._tokens: dict[str, VerifiedCredential] = {}
         self._lock = Lock()
 
-    def create_token(self, username: str, current_password: str) -> str:
-        """Create and persist a short-lived token for verified user credentials."""
+    def create_token(self, username: str) -> str:
+        """Create and persist a short-lived token proving the user verified their identity."""
         token = token_urlsafe(32)
         credential = VerifiedCredential(
             username=username,
-            current_password=current_password,
             expires_at=datetime.now(UTC) + self._ttl,
         )
         with self._lock:
@@ -39,8 +37,8 @@ class VerificationTokenStore:
             self._tokens[token] = credential
         return token
 
-    def consume_token(self, token: str, username: str) -> str:
-        """Return password for a valid token and invalidate it in one operation."""
+    def consume_token(self, token: str, username: str) -> None:
+        """Validate and invalidate a verification token in one atomic operation."""
         with self._lock:
             self._cleanup_expired_locked()
             credential = self._tokens.pop(token, None)
@@ -49,7 +47,6 @@ class VerificationTokenStore:
             raise VerificationTokenError("Verification expired. Please verify credentials again.")
         if credential.username != username:
             raise VerificationTokenError("Verification does not match the provided username.")
-        return credential.current_password
 
     def _cleanup_expired_locked(self) -> None:
         """Delete all expired tokens while lock ownership is held by caller."""
