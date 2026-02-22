@@ -8,8 +8,9 @@ from slowapi.util import get_remote_address
 from starlette.responses import JSONResponse
 
 from app.config import settings
-from app.models import PasswordResetRequest, PasswordResetResponse
-from app.services.oracle import reset_password
+from app.models import CredentialCheckRequest, PasswordResetRequest, PasswordResetResponse
+from app.services.oracle import reset_password, verify_credentials
+from app.services.verification_tokens import VerificationTokenStore
 
 
 logging.basicConfig(
@@ -21,6 +22,7 @@ logger = logging.getLogger("audit")
 
 
 limiter = Limiter(key_func=get_remote_address)
+verification_store = VerificationTokenStore(ttl_seconds=300)
 
 app = FastAPI(title="Oracle Password Reset", version="1.0.0")
 app.state.limiter = limiter
@@ -48,10 +50,31 @@ def handle_reset_password(request: Request, body: PasswordResetRequest):
     ip = request.client.host
 
     try:
-        message = reset_password(body.username, body.current_password, body.new_password)
+        current_password = verification_store.consume_token(body.verification_token, body.username)
+        message = reset_password(body.username, current_password, body.new_password)
         logger.info("user=%s ip=%s status=SUCCESS", body.username, ip)
         return PasswordResetResponse(success=True, message=message)
 
     except ValueError as e:
         logger.warning("user=%s ip=%s status=FAILED reason=%s", body.username, ip, e)
+        return PasswordResetResponse(success=False, message=str(e))
+
+
+@app.post("/verify-credentials", response_model=PasswordResetResponse)
+@limiter.limit("5/minute")
+def handle_verify_credentials(request: Request, body: CredentialCheckRequest):
+    ip = request.client.host
+
+    try:
+        message = verify_credentials(body.username, body.current_password)
+        verification_token = verification_store.create_token(body.username, body.current_password)
+        logger.info("user=%s ip=%s status=VERIFY_SUCCESS", body.username, ip)
+        return PasswordResetResponse(
+            success=True,
+            message=message,
+            verification_token=verification_token,
+        )
+
+    except ValueError as e:
+        logger.warning("user=%s ip=%s status=VERIFY_FAILED reason=%s", body.username, ip, e)
         return PasswordResetResponse(success=False, message=str(e))

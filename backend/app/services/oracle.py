@@ -34,3 +34,21 @@ def reset_password(username: str, current_password: str, new_password: str) -> s
         code = getattr(error, "code", None)
         message = ORA_ERROR_MESSAGES.get(code, "An unexpected database error occurred. Please contact the DBA.")
         raise ValueError(message) from e
+
+
+def verify_credentials(username: str, current_password: str) -> str:
+    """Verify the provided Oracle credentials by attempting a connection."""
+    try:
+        with oracledb.connect(
+            user=username,
+            password=current_password,
+            dsn=settings.oracle_dsn,
+        ):
+            pass
+        return "Credentials verified."
+
+    except oracledb.DatabaseError as e:
+        error = e.args[0] if e.args else None
+        code = getattr(error, "code", None)
+        message = ORA_ERROR_MESSAGES.get(code, "An unexpected database error occurred. Please contact the DBA.")
+        raise ValueError(message) from e

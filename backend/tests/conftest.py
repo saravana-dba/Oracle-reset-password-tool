@@ -25,6 +25,14 @@ def mock_oracle_success():
     """Mock oracledb.connect to succeed (password changed)."""
     with patch("app.services.oracle.oracledb.connect") as mock_connect:
         mock_conn = MagicMock()
+        mock_conn.__enter__.return_value = mock_conn
+
+        def _exit(exc_type, exc, tb):
+            """Mirror context manager behavior by closing the mocked connection."""
+            mock_conn.close()
+            return False
+
+        mock_conn.__exit__.side_effect = _exit
         mock_connect.return_value = mock_conn
         yield mock_connect
 
@@ -41,3 +49,17 @@ def mock_oracle_error():
         return patch("app.services.oracle.oracledb.connect", side_effect=exc)
 
     return _make
+
+
+@pytest.fixture()
+def mock_create_verification_token():
+    """Mock verification token creation for deterministic API tests."""
+    with patch("app.main.verification_store.create_token", return_value="token-123") as mock_create:
+        yield mock_create
+
+
+@pytest.fixture()
+def mock_consume_verification_token():
+    """Mock verification token consumption to avoid state coupling in API tests."""
+    with patch("app.main.verification_store.consume_token", return_value="tiger") as mock_consume:
+        yield mock_consume

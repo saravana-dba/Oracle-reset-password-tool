@@ -1,6 +1,6 @@
 import pytest
 
-from app.services.oracle import reset_password
+from app.services.oracle import reset_password, verify_credentials
 
 
 class TestResetPasswordSuccess:
@@ -43,3 +43,22 @@ class TestResetPasswordOraErrors:
         with mock_oracle_error(99999):
             with pytest.raises(ValueError, match="unexpected database error"):
                 reset_password("scott", "tiger", "newpass123")
+
+
+class TestVerifyCredentials:
+    def test_returns_success_message(self, mock_oracle_success):
+        result = verify_credentials("scott", "tiger")
+        assert result == "Credentials verified."
+
+    def test_calls_connect_with_correct_args(self, mock_oracle_success):
+        verify_credentials("scott", "tiger")
+        mock_oracle_success.assert_called_once_with(
+            user="scott",
+            password="tiger",
+            dsn="localhost:1521/testdb",
+        )
+
+    def test_invalid_credentials(self, mock_oracle_error):
+        with mock_oracle_error(1017):
+            with pytest.raises(ValueError, match="Invalid username or current password"):
+                verify_credentials("scott", "wrongpw")

@@ -59,7 +59,7 @@
         </button>
       </div>
 
-      <form id="resetForm" class="space-y-4">
+      <form id="loginForm" class="space-y-4">
         <!-- Username -->
         <div>
           <label for="username" class="block text-sm font-medium text-gray-700 mb-1.5">Username</label>
@@ -84,6 +84,25 @@
               <svg class="eye-closed h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12c1.292 4.338 5.31 7.5 10.066 7.5.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>
             </button>
           </div>
+        </div>
+
+        <!-- Verify -->
+        <button
+          type="submit" id="loginBtn"
+          class="w-full bg-blue-600 text-white py-2.5 rounded-lg font-medium hover:bg-blue-700 active:bg-blue-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2"
+        >
+          <svg id="loginSpinner" class="hidden animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+          </svg>
+          <span id="loginText">Verify Credentials</span>
+        </button>
+      </form>
+
+      <form id="resetForm" class="space-y-4 hidden">
+        <div class="flex items-center justify-between text-sm text-gray-600">
+          <span>Signed in as <span id="verifiedUser" class="font-medium text-gray-900"></span></span>
+          <button type="button" id="changeUserBtn" class="text-blue-600 hover:text-blue-700">Change user</button>
         </div>
 
         <!-- Divider -->
@@ -139,17 +158,29 @@
   </div>
 
 <script>
-  const API_URL = "http://localhost:8080/reset-password";
+  const API_HOST = window.location.hostname || "localhost";
+  const API_BASE = `http://${API_HOST}:8080`;
+  const API_VERIFY = `${API_BASE}/verify-credentials`;
+  const API_RESET = `${API_BASE}/reset-password`;
 
-  const form        = document.getElementById("resetForm");
+  const loginForm   = document.getElementById("loginForm");
+  const resetForm   = document.getElementById("resetForm");
+  const loginBtn    = document.getElementById("loginBtn");
+  const loginSpinner = document.getElementById("loginSpinner");
+  const loginText   = document.getElementById("loginText");
   const submitBtn   = document.getElementById("submitBtn");
   const spinner     = document.getElementById("spinner");
   const btnText     = document.getElementById("btnText");
+  const verifiedUser = document.getElementById("verifiedUser");
+  const changeUserBtn = document.getElementById("changeUserBtn");
   const statusMsg   = document.getElementById("statusMsg");
   const statusIcon  = document.getElementById("statusIcon");
   const statusTitle = document.getElementById("statusTitle");
   const statusDetail = document.getElementById("statusDetail");
   const statusClose = document.getElementById("statusClose");
+
+  let verifiedUsername = "";
+  let verificationToken = "";
 
   const CHECK_PATH = "M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z";
   const ERROR_PATH = "M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z";
@@ -176,10 +207,24 @@
   });
 
   // ---- Loading State ----
-  function setLoading(loading) {
+  function setLoginLoading(loading) {
+    loginBtn.disabled = loading;
+    loginSpinner.classList.toggle("hidden", !loading);
+    loginText.textContent = loading ? "Verifying..." : "Verify Credentials";
+  }
+
+  function setResetLoading(loading) {
     submitBtn.disabled = loading;
     spinner.classList.toggle("hidden", !loading);
     btnText.textContent = loading ? "Resetting..." : "Reset Password";
+  }
+
+  async function parseJsonResponse(res) {
+    try {
+      return await res.json();
+    } catch {
+      return null;
+    }
   }
 
   // ---- Password Visibility Toggles ----
@@ -193,12 +238,79 @@
     });
   });
 
-  // ---- Form Submit ----
-  form.addEventListener("submit", async (e) => {
+  // ---- Login Submit ----
+  loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const username        = document.getElementById("username").value.trim();
     const currentPassword = document.getElementById("currentPassword").value;
+
+    if (!username || !currentPassword) {
+      showStatus("Enter a username and current password.", false);
+      return;
+    }
+
+    setLoginLoading(true);
+
+    try {
+      const res = await fetch(API_VERIFY, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username,
+          current_password: currentPassword,
+        }),
+      });
+
+      if (res.status === 429) {
+        showStatus("Too many requests. Please try again later.", false);
+        return;
+      }
+
+      const data = await parseJsonResponse(res);
+      if (!data) {
+        showStatus(`Server returned an invalid response (${res.status}).`, false);
+        return;
+      }
+      showStatus(data.message, data.success);
+
+      if (data.success) {
+        if (!data.verification_token) {
+          showStatus("Verification token missing from server response.", false);
+          return;
+        }
+        verifiedUsername = username;
+        verificationToken = data.verification_token;
+        verifiedUser.textContent = username;
+        resetForm.reset();
+        loginForm.classList.add("hidden");
+        resetForm.classList.remove("hidden");
+      }
+    } catch (error) {
+      showStatus(`Unable to reach the server (${error.message}).`, false);
+    } finally {
+      setLoginLoading(false);
+    }
+  });
+
+  changeUserBtn.addEventListener("click", () => {
+    verifiedUsername = "";
+    verificationToken = "";
+    resetForm.reset();
+    loginForm.reset();
+    resetForm.classList.add("hidden");
+    loginForm.classList.remove("hidden");
+  });
+
+  // ---- Reset Submit ----
+  resetForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    if (!verifiedUsername || !verificationToken) {
+      showStatus("Please verify your credentials first.", false);
+      return;
+    }
+
     const newPassword     = document.getElementById("newPassword").value;
     const confirmPassword = document.getElementById("confirmPassword").value;
 
@@ -207,15 +319,15 @@
       return;
     }
 
-    setLoading(true);
+    setResetLoading(true);
 
     try {
-      const res = await fetch(API_URL, {
+      const res = await fetch(API_RESET, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          username,
-          current_password: currentPassword,
+          username: verifiedUsername,
+          verification_token: verificationToken,
           new_password: newPassword,
         }),
       });
@@ -225,14 +337,25 @@
         return;
       }
 
-      const data = await res.json();
+      const data = await parseJsonResponse(res);
+      if (!data) {
+        showStatus(`Server returned an invalid response (${res.status}).`, false);
+        return;
+      }
       showStatus(data.message, data.success);
 
-      if (data.success) form.reset();
-    } catch {
-      showStatus("Unable to reach the server. Please try again.", false);
+      if (data.success) {
+        verificationToken = "";
+        resetForm.reset();
+        document.getElementById("username").value = verifiedUsername;
+        document.getElementById("currentPassword").value = "";
+        resetForm.classList.add("hidden");
+        loginForm.classList.remove("hidden");
+      }
+    } catch (error) {
+      showStatus(`Unable to reach the server (${error.message}).`, false);
     } finally {
-      setLoading(false);
+      setResetLoading(false);
     }
   });
 </script>
