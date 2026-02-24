@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Oracle DB Password Reset</title>
+  <title>Password Reset - Avis | Budget</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -16,39 +16,74 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
+    :root {
+      --brand-primary: #D50032;
+      --brand-hover: #B0002A;
+    }
+
     .toast-enter  { animation: slideDown 0.3s ease-out; }
     .toast-exit   { animation: slideUp 0.25s ease-in forwards; }
     @keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes slideUp   { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-8px); } }
 
-    input:focus { box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+    input:focus, select:focus { box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-primary) 15%, transparent); }
 
     .password-toggle { cursor: pointer; transition: color 0.15s; }
-    .password-toggle:hover { color: #2563eb; }
+    .password-toggle:hover { color: var(--brand-primary); }
+
+    .btn-brand {
+      background-color: var(--brand-primary);
+      transition: background-color 0.15s;
+    }
+    .btn-brand:hover { background-color: var(--brand-hover); }
+    .btn-brand:active { background-color: color-mix(in srgb, var(--brand-hover) 85%, black); }
+
+    .brand-accent-top {
+      border-top: 3px solid var(--brand-primary);
+    }
+
+    .brand-text { color: var(--brand-primary); }
+
+    .brand-focus:focus {
+      outline: none;
+      border-color: var(--brand-primary);
+    }
+
+    .brand-link {
+      color: var(--brand-primary);
+      transition: color 0.15s;
+    }
+    .brand-link:hover {
+      color: var(--brand-hover);
+    }
+
+    .brand-badge {
+      background-color: color-mix(in srgb, var(--brand-primary) 12%, transparent);
+      color: var(--brand-primary);
+    }
   </style>
 </head>
 <body class="min-h-screen bg-gray-50 flex items-center justify-center px-4 font-sans">
 
   <div class="w-full max-w-md">
 
-    <!-- Logo -->
-    <div class="flex justify-center mb-6">
-      <div class="h-12 w-28 rounded-xl bg-white border border-red-200 flex items-center justify-center">
-        <svg class="h-7 w-16" viewBox="0 0 200 120" role="img" aria-label="Oracle logo">
-          <rect x="20" y="20" width="160" height="80" rx="40" ry="40" fill="none" stroke="#C74634" stroke-width="20" />
-        </svg>
+<div class="flex justify-center items-center gap-3 mb-6">
+      <div class="h-12 px-5 rounded-xl bg-white border border-gray-200 flex items-center justify-center shadow-sm">
+        <span class="text-lg font-extrabold tracking-wide" style="color: #D50032;">AVIS</span>
+      </div>
+      <div class="h-8 w-px bg-gray-200"></div>
+      <div class="h-12 px-5 rounded-xl bg-white border border-gray-200 flex items-center justify-center shadow-sm">
+        <span class="text-lg font-extrabold tracking-wide" style="color: #F68B1F;">Budget</span>
       </div>
     </div>
 
-    <!-- Card -->
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
-      <h1 class="text-xl font-semibold text-gray-900 text-center">Oracle DB Password Reset</h1>
+<div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 brand-accent-top">
+      <h1 class="text-xl font-semibold text-gray-900 text-center">Password Reset</h1>
       <p class="text-sm text-gray-500 text-center mt-1 mb-7">Securely update your database password</p>
 
-      <!-- Status Message -->
-      <div id="statusMsg" class="hidden mb-5 px-4 py-3.5 rounded-lg text-sm font-medium flex items-start gap-3">
+<div id="statusMsg" class="hidden mb-5 px-4 py-3.5 rounded-lg text-sm font-medium flex items-start gap-3">
         <svg id="statusIcon" class="h-5 w-5 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"></svg>
         <div>
           <p id="statusTitle" class="font-semibold"></p>
@@ -60,24 +95,34 @@
       </div>
 
       <form id="loginForm" class="space-y-4">
-        <!-- Username -->
-        <div>
+<div>
+          <label for="brand" class="block text-sm font-medium text-gray-700 mb-1.5">Brand</label>
+          <select
+            id="brand" name="brand"
+            class="w-full px-3.5 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none brand-focus transition-colors appearance-none"
+            style="background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 20 20%27 fill=%27%236b7280%27%3E%3Cpath fill-rule=%27evenodd%27 d=%27M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z%27 clip-rule=%27evenodd%27/%3E%3C/svg%3E');background-position: right 0.75rem center;background-repeat: no-repeat;background-size: 1.25rem;padding-right: 2.5rem;"
+          >
+            <option value="avis">Avis</option>
+            <option value="budget">Budget</option>
+          </select>
+        </div>
+
+<div>
           <label for="username" class="block text-sm font-medium text-gray-700 mb-1.5">Username</label>
           <input
             type="text" id="username" name="username" required autocomplete="username"
             placeholder="Database username"
-            class="w-full px-3.5 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-colors"
+            class="w-full px-3.5 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none brand-focus transition-colors"
           />
         </div>
 
-        <!-- Current Password -->
-        <div>
+<div>
           <label for="currentPassword" class="block text-sm font-medium text-gray-700 mb-1.5">Current Password</label>
           <div class="relative">
             <input
               type="password" id="currentPassword" name="currentPassword" required autocomplete="current-password"
               placeholder="Enter current password"
-              class="w-full px-3.5 py-2.5 pr-11 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-colors"
+              class="w-full px-3.5 py-2.5 pr-11 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none brand-focus transition-colors"
             />
             <button type="button" class="password-toggle absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" data-target="currentPassword">
               <svg class="eye-open h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
@@ -86,10 +131,9 @@
           </div>
         </div>
 
-        <!-- Verify -->
-        <button
+<button
           type="submit" id="loginBtn"
-          class="w-full bg-blue-600 text-white py-2.5 rounded-lg font-medium hover:bg-blue-700 active:bg-blue-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2"
+          class="w-full btn-brand text-white py-2.5 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2"
         >
           <svg id="loginSpinner" class="hidden animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -101,21 +145,22 @@
 
       <form id="resetForm" class="space-y-4 hidden">
         <div class="flex items-center justify-between text-sm text-gray-600">
-          <span>Signed in as <span id="verifiedUser" class="font-medium text-gray-900"></span></span>
-          <button type="button" id="changeUserBtn" class="text-blue-600 hover:text-blue-700">Change user</button>
+          <span class="flex items-center gap-2">
+            Signed in as <span id="verifiedUser" class="font-medium text-gray-900"></span>
+            <span id="brandBadge" class="brand-badge text-xs font-semibold px-2 py-0.5 rounded-full uppercase tracking-wide"></span>
+          </span>
+          <button type="button" id="changeUserBtn" class="brand-link font-medium">Change user</button>
         </div>
 
-        <!-- Divider -->
-        <div class="border-t border-gray-100 my-1"></div>
+<div class="border-t border-gray-100 my-1"></div>
 
-        <!-- New Password -->
-        <div>
+<div>
           <label for="newPassword" class="block text-sm font-medium text-gray-700 mb-1.5">New Password</label>
           <div class="relative">
             <input
               type="password" id="newPassword" name="newPassword" required minlength="8" autocomplete="new-password"
               placeholder="Minimum 8 characters"
-              class="w-full px-3.5 py-2.5 pr-11 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-colors"
+              class="w-full px-3.5 py-2.5 pr-11 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none brand-focus transition-colors"
             />
             <button type="button" class="password-toggle absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" data-target="newPassword">
               <svg class="eye-open h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
@@ -124,14 +169,13 @@
           </div>
         </div>
 
-        <!-- Confirm Password -->
-        <div>
+<div>
           <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-1.5">Confirm New Password</label>
           <div class="relative">
             <input
               type="password" id="confirmPassword" name="confirmPassword" required minlength="8" autocomplete="new-password"
               placeholder="Re-enter new password"
-              class="w-full px-3.5 py-2.5 pr-11 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-colors"
+              class="w-full px-3.5 py-2.5 pr-11 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none brand-focus transition-colors"
             />
             <button type="button" class="password-toggle absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" data-target="confirmPassword">
               <svg class="eye-open h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
@@ -140,10 +184,9 @@
           </div>
         </div>
 
-        <!-- Submit -->
-        <button
+<button
           type="submit" id="submitBtn"
-          class="w-full bg-blue-600 text-white py-2.5 rounded-lg font-medium hover:bg-blue-700 active:bg-blue-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2"
+          class="w-full btn-brand text-white py-2.5 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2"
         >
           <svg id="spinner" class="hidden animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -163,6 +206,11 @@
   const API_VERIFY = `${API_BASE}/verify-credentials`;
   const API_RESET = `${API_BASE}/reset-password`;
 
+  const BRAND_THEMES = {
+    avis:   { primary: "#D50032", hover: "#B0002A" },
+    budget: { primary: "#F68B1F", hover: "#DD7A10" },
+  };
+
   const loginForm   = document.getElementById("loginForm");
   const resetForm   = document.getElementById("resetForm");
   const loginBtn    = document.getElementById("loginBtn");
@@ -178,15 +226,31 @@
   const statusTitle = document.getElementById("statusTitle");
   const statusDetail = document.getElementById("statusDetail");
   const statusClose = document.getElementById("statusClose");
+  const brandSelect = document.getElementById("brand");
+  const brandBadge  = document.getElementById("brandBadge");
 
   let verifiedUsername = "";
   let verifiedPassword = "";
   let verificationToken = "";
+  let selectedBrand = brandSelect.value;
 
   const CHECK_PATH = "M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z";
   const ERROR_PATH = "M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z";
 
-  // ---- Status Message ----
+  function applyBrandTheme(brand) {
+    const theme = BRAND_THEMES[brand];
+    if (!theme) return;
+    document.documentElement.style.setProperty("--brand-primary", theme.primary);
+    document.documentElement.style.setProperty("--brand-hover", theme.hover);
+    selectedBrand = brand;
+  }
+
+  brandSelect.addEventListener("change", () => {
+    applyBrandTheme(brandSelect.value);
+  });
+
+  applyBrandTheme(brandSelect.value);
+
   function showStatus(message, success) {
     statusIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="${success ? CHECK_PATH : ERROR_PATH}" />`;
     statusTitle.textContent = success ? "Success" : "Error";
@@ -207,7 +271,6 @@
     }, { once: true });
   });
 
-  // ---- Loading State ----
   function setLoginLoading(loading) {
     loginBtn.disabled = loading;
     loginSpinner.classList.toggle("hidden", !loading);
@@ -228,7 +291,6 @@
     }
   }
 
-  // ---- Password Visibility Toggles ----
   document.querySelectorAll(".password-toggle").forEach((btn) => {
     btn.addEventListener("click", () => {
       const input = document.getElementById(btn.dataset.target);
@@ -239,7 +301,6 @@
     });
   });
 
-  // ---- Login Submit ----
   loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -258,6 +319,7 @@
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          brand: selectedBrand,
           username,
           current_password: currentPassword,
         }),
@@ -284,6 +346,8 @@
         verifiedPassword = currentPassword;
         verificationToken = data.verification_token;
         verifiedUser.textContent = username;
+        brandBadge.textContent = selectedBrand;
+        brandSelect.disabled = true;
         resetForm.reset();
         loginForm.classList.add("hidden");
         resetForm.classList.remove("hidden");
@@ -299,13 +363,14 @@
     verifiedUsername = "";
     verifiedPassword = "";
     verificationToken = "";
+    brandSelect.disabled = false;
     resetForm.reset();
     loginForm.reset();
     resetForm.classList.add("hidden");
     loginForm.classList.remove("hidden");
+    applyBrandTheme(brandSelect.value);
   });
 
-  // ---- Reset Submit ----
   resetForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -329,6 +394,7 @@
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          brand: selectedBrand,
           username: verifiedUsername,
           current_password: verifiedPassword,
           verification_token: verificationToken,
@@ -351,6 +417,7 @@
       if (data.success) {
         verifiedPassword = "";
         verificationToken = "";
+        brandSelect.disabled = false;
         resetForm.reset();
         document.getElementById("username").value = verifiedUsername;
         document.getElementById("currentPassword").value = "";

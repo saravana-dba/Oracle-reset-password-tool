@@ -43,20 +43,20 @@ async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
     )
 
 
-
 @app.post("/reset-password", response_model=PasswordResetResponse)
 @limiter.limit("5/minute")
 def handle_reset_password(request: Request, body: PasswordResetRequest):
     ip = request.client.host
+    dsn = settings.get_dsn(body.brand)
 
     try:
         verification_store.consume_token(body.verification_token, body.username)
-        message = reset_password(body.username, body.current_password, body.new_password)
-        logger.info("user=%s ip=%s status=SUCCESS", body.username, ip)
+        message = reset_password(body.username, body.current_password, body.new_password, dsn)
+        logger.info("user=%s brand=%s ip=%s status=SUCCESS", body.username, body.brand, ip)
         return PasswordResetResponse(success=True, message=message)
 
     except ValueError as e:
-        logger.warning("user=%s ip=%s status=FAILED reason=%s", body.username, ip, e)
+        logger.warning("user=%s brand=%s ip=%s status=FAILED reason=%s", body.username, body.brand, ip, e)
         return PasswordResetResponse(success=False, message=str(e))
 
 
@@ -64,11 +64,12 @@ def handle_reset_password(request: Request, body: PasswordResetRequest):
 @limiter.limit("5/minute")
 def handle_verify_credentials(request: Request, body: CredentialCheckRequest):
     ip = request.client.host
+    dsn = settings.get_dsn(body.brand)
 
     try:
-        message = verify_credentials(body.username, body.current_password)
+        message = verify_credentials(body.username, body.current_password, dsn)
         verification_token = verification_store.create_token(body.username)
-        logger.info("user=%s ip=%s status=VERIFY_SUCCESS", body.username, ip)
+        logger.info("user=%s brand=%s ip=%s status=VERIFY_SUCCESS", body.username, body.brand, ip)
         return PasswordResetResponse(
             success=True,
             message=message,
@@ -76,5 +77,5 @@ def handle_verify_credentials(request: Request, body: CredentialCheckRequest):
         )
 
     except ValueError as e:
-        logger.warning("user=%s ip=%s status=VERIFY_FAILED reason=%s", body.username, ip, e)
+        logger.warning("user=%s brand=%s ip=%s status=VERIFY_FAILED reason=%s", body.username, body.brand, ip, e)
         return PasswordResetResponse(success=False, message=str(e))
