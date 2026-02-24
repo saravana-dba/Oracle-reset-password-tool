@@ -1,8 +1,5 @@
 import oracledb
 
-from app.config import settings
-
-# Map Oracle error codes to user-friendly messages.
 ORA_ERROR_MESSAGES = {
     1017: "Invalid username or current password.",
     28003: "New password does not meet database complexity requirements.",
@@ -10,20 +7,30 @@ ORA_ERROR_MESSAGES = {
 }
 
 
-def reset_password(username: str, current_password: str, new_password: str) -> str:
+def reset_password(username: str, current_password: str, new_password: str, dsn: str) -> str:
     """Connect as the user with their current password and change it to the new one.
 
     Oracle handles the password change natively via the `newpassword` parameter
     during connection. If the current credentials are valid and the new password
     meets Oracle's policies, the password is changed atomically.
 
-    Returns a success message or raises a ValueError with a user-friendly error.
+    Args:
+        username: The Oracle database username.
+        current_password: The user's current password.
+        new_password: The desired new password.
+        dsn: The Oracle DSN connection string for the target database.
+
+    Returns:
+        A success message string.
+
+    Raises:
+        ValueError: With a user-friendly message if the operation fails.
     """
     try:
         with oracledb.connect(
             user=username,
             password=current_password,
-            dsn=settings.oracle_dsn,
+            dsn=dsn,
             newpassword=new_password,
         ):
             pass
@@ -36,13 +43,25 @@ def reset_password(username: str, current_password: str, new_password: str) -> s
         raise ValueError(message) from e
 
 
-def verify_credentials(username: str, current_password: str) -> str:
-    """Verify the provided Oracle credentials by attempting a connection."""
+def verify_credentials(username: str, current_password: str, dsn: str) -> str:
+    """Verify the provided Oracle credentials by attempting a connection.
+
+    Args:
+        username: The Oracle database username.
+        current_password: The user's current password.
+        dsn: The Oracle DSN connection string for the target database.
+
+    Returns:
+        A success message string.
+
+    Raises:
+        ValueError: With a user-friendly message if verification fails.
+    """
     try:
         with oracledb.connect(
             user=username,
             password=current_password,
-            dsn=settings.oracle_dsn,
+            dsn=dsn,
         ):
             pass
         return "Credentials verified."

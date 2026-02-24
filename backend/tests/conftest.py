@@ -1,7 +1,8 @@
 import os
 
-# Set a dummy DSN so config.py doesn't fail on import.
-os.environ.setdefault("ORACLE_DSN", "localhost:1521/testdb")
+os.environ.pop("ORACLE_DSN", None)
+os.environ.setdefault("ORACLE_DSN_AVIS", "localhost:1521/avis_testdb")
+os.environ.setdefault("ORACLE_DSN_BUDGET", "localhost:1521/budget_testdb")
 
 from unittest.mock import MagicMock, patch
 
