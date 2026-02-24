@@ -50,7 +50,7 @@ def handle_reset_password(request: Request, body: PasswordResetRequest):
     dsn = settings.get_dsn(body.brand)
 
     try:
-        verification_store.consume_token(body.verification_token, body.username)
+        verification_store.consume_token(body.verification_token, body.username, body.brand)
         message = reset_password(body.username, body.current_password, body.new_password, dsn)
         logger.info("user=%s brand=%s ip=%s status=SUCCESS", body.username, body.brand, ip)
         return PasswordResetResponse(success=True, message=message)
@@ -68,7 +68,7 @@ def handle_verify_credentials(request: Request, body: CredentialCheckRequest):
 
     try:
         message = verify_credentials(body.username, body.current_password, dsn)
-        verification_token = verification_store.create_token(body.username)
+        verification_token = verification_store.create_token(body.username, body.brand)
         logger.info("user=%s brand=%s ip=%s status=VERIFY_SUCCESS", body.username, body.brand, ip)
         return PasswordResetResponse(
             success=True,
